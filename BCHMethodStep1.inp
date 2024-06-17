@@ -1,0 +1,39 @@
+TITLE:  LPA model of NNNS
+        Saving weights for BCH manual implementation;
+		
+DATA: FILE IS nnns_ibq_itsea_df.csv;
+
+VARIABLE: 
+	NAMES ARE FamilyID language brtwghtmB brtlgthmB brthcmB
+  	brtccmB NNNSage NNNSpart Location examiner nhabit nattention
+  	nhandle nqmove nregulation nnonoptref nstressp nstressa
+  	nstressc nstresss nstressv nstressg nstressx nstress narousal
+  	nhypetone nhypotone nasymref nexcitability nlethargy
+  	NNNSexaminer NNNSagey NNNSparty Gestage BW admed
+  	sex DERS mage edu maritalstatus eth inc race DERStotmC
+  	RetentionC AGEC IBQRVSFsurmC IBQRVSFnegmC IBQRVSFregmC
+  	Retention18m ITSEAextmD1 ITSEAintmD1 ITSEAdysmD1
+  	ITSEAcompmD1 ITSEAextTmD1 ITSEAintTmD1 ITSEAdysTmD1
+  	ITSEAcompTmD1 cov minority;
+	
+	USEVARIABLES ARE nattention nhandle nqmove nregulation nstress 
+	narousal nlethargy nnonoptref nasymref nexcitability nhypotone 
+	nhypetone nnonoptref;
+    
+	AUXILIARY ARE cov edu Gestage DERStotmC IBQRVSFnegmC 
+	ITSEAextTmD1 ITSEAintTmD1 ITSEAdysTmD1;
+				  
+	IDVARIABLE IS FamilyID;
+
+    	MISSING IS .;
+	
+	CLASSES = class(3);
+	
+ANALYSIS:
+	TYPE = MIXTURE;
+	STARTS = 100 20;
+	ESTIMATOR = ML;
+	
+SAVEDATA:
+	FILE IS nnns_ibq_itsea_BCH.dat;
+	SAVE = BCHWEIGHTS;
