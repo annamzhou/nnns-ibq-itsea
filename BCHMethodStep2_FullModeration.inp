@@ -1,0 +1,116 @@
+TITLE: BCH 3-Step Approach for Latent Profile Moderation Analysis;
+
+DATA: 
+	FILE IS nnns_ibq_itsea_BCH.dat;
+	
+
+VARIABLE: 
+	NAMES ARE nattention nhandle nqmove nregulation nstress
+  	narousal nlethargy nnonoptref nasymref nexcitability nhypotone
+  	nhypetone nnonoptref cov edu Gestage DERStotmC IBQRVSFnegmC ITSEAextTmD1 ITSEAintTmD1
+  	ITSEAdysTmD1 BCHW1-BCHW3 FamilyID;
+	
+	USEVARIABLES ARE nattention nhandle nqmove nregulation nstress 
+	narousal nlethargy nnonoptref nasymref nexcitability nhypotone 
+	nhypetone nnonoptref DERStotmC IBQRVSFnegmC ITSEAextTmD1 ITSEAintTmD1
+  	ITSEAdysTmD1 BCHW1-BCHW3;
+    
+	AUXILIARY ARE cov edu Gestage;
+	
+	TRAINING = BCHW1-BCHW3 (bch);
+				  
+	IDVARIABLE IS FamilyID;
+
+    	MISSING IS *;
+	
+	CLASSES = class(3);
+
+ANALYSIS:
+	TYPE = MIXTURE;
+	STARTS = 0 0;
+	ESTIMATOR = MLR;
+	
+MODEL:
+	%OVERALL%
+	Class ON DERStotmC; !regress direct effect of predictors on class..
+	IBQRVSFnegmC ON DERStotmC;
+	ITSEAintTmD1 ON DERStotmC IBQRVSFnegmC;
+	ITSEAextTmD1 ON DERStotmC IBQRVSFnegmC;
+	ITSEAdysTmD1 ON DERStotmC IBQRVSFnegmC;
+	ITSEAintTmD1 WITH ITSEAextTmD1; !allow outcomes to covary
+	ITSEAintTmD1 WITH ITSEAdysTmD1; !allow outcomes to covary
+	ITSEAextTmD1 WITH ITSEAdysTmD1; !allow outcomes to covary
+	
+	%class#1%
+	IBQRVSFnegmC ON DERStotmC (a);
+	
+	ITSEAintTmD1 ON IBQRVSFnegmC (x1);
+	ITSEAintTmD1 ON DERStotmC (m1);
+	ITSEAextTmD1 ON IBQRVSFnegmC (x2);
+	ITSEAextTmD1 ON DERStotmC (m2);  
+	ITSEAdysTmD1 ON IBQRVSFnegmC (x3);
+	ITSEAdysTmD1 ON DERStotmC (m3);  
+	
+	[IBQRVSFnegmC ITSEAextTmD1 ITSEAintTmD1 
+	ITSEAdysTmD1];
+	
+	%class#2%
+	IBQRVSFnegmC ON DERStotmC (b);
+	
+	ITSEAintTmD1 ON IBQRVSFnegmC (y1);
+	ITSEAintTmD1 ON DERStotmC (n1);
+	ITSEAextTmD1 ON IBQRVSFnegmC (y2);
+	ITSEAextTmD1 ON DERStotmC (n2);  
+	ITSEAdysTmD1 ON IBQRVSFnegmC (y3);
+	ITSEAdysTmD1 ON DERStotmC (n3); 
+	
+	[IBQRVSFnegmC ITSEAextTmD1 ITSEAintTmD1 
+	ITSEAdysTmD1];
+	
+	%class#3%
+	IBQRVSFnegmC ON DERStotmC (c);
+	
+	ITSEAintTmD1 ON IBQRVSFnegmC (z1);
+	ITSEAintTmD1 ON DERStotmC (o1);
+	ITSEAextTmD1 ON IBQRVSFnegmC (z2);
+	ITSEAextTmD1 ON DERStotmC (o2);  
+	ITSEAdysTmD1 ON IBQRVSFnegmC (z3);
+	ITSEAdysTmD1 ON DERStotmC (o3); 
+	
+	[IBQRVSFnegmC ITSEAextTmD1 ITSEAintTmD1 
+	ITSEAdysTmD1];
+	
+
+MODEL CONSTRAINT: use to use this to compute indir paths
+	NEW (ax1 ax2 ax3 by1 by2 by3 cz1 cz2 cz3)
+	!Profile 1
+	ax1 = a*x1; !Indirect effect of DERS to NA to INT
+	ax2 = a*x2; !Indirect effect of DERS to NA to EXT
+	ax3 = a*x3; !Indirect effect of DERS to NA to DYS
+	!Profile 2
+	by1 = b*y1; !Indirect effect of DERS to NA to INT
+	by2 = b*y2; !Indirect effect of DERS to NA to EXT
+	by3 = b*y3; !Indirect effect of DERS to NA to DYS
+	!Profile 3
+	cz1 = c*z1; !Indirect effect of DERS to NA to INT
+	cz2 = c*z2; !Indirect effect of DERS to NA to EXT
+	cz3 = c*z3; !Indirect effect of DERS to NA to DYS
+
+
+MODEL TEST:
+	! NOTE: Mplus will conduct only one wald test at a time, 
+	! need to switch which lines are commented out to test means
+	
+	!a = b; !Wald test comparing profiles 1 and 2 (on IBQ)
+	!a = c; !Wald test comparing profiles 1 and 3 (on IBQ)
+	
+	!m1 = n1; !Wald test comparing profiles 1 and 2 (on INT)
+	!m1 = o1; !Wald test comparing profiles 1 and 3 (on INT)
+	
+	!m2 = n2; !Wald test comparing profiles 1 and 2 (on EXT)
+	!m2 = o2; !Wald test comparing profiles 1 and 3 (on EXT)
+	
+	!m3 = n3; !Wald test comparing profiles 1 and 2 (on DYS)
+	!m3 = o3; !Wald test comparing profiles 1 and 2 (on DYS)
+	
+

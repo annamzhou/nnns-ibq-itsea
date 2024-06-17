@@ -1,0 +1,49 @@
+TITLE: BCH 3-Step Approach for Latent Profile Moderation Analysis;
+
+DATA: 
+	FILE IS nnns_ibq_itsea_BCH.dat;
+	
+
+VARIABLE: 
+	NAMES ARE nattention nhandle nqmove nregulation nstress
+  	narousal nlethargy nnonoptref nasymref nexcitability nhypotone
+  	nhypetone nnonoptref cov edu Gestage DERStotmC IBQRVSFnegmC ITSEAextTmD1 ITSEAintTmD1
+  	ITSEAdysTmD1 BCHW1-BCHW3 FamilyID;
+	
+	USEVARIABLES ARE nattention nhandle nqmove nregulation nstress
+  	narousal nlethargy nnonoptref nasymref nexcitability nhypotone
+  	nhypetone nnonoptref DERStotmC IBQRVSFnegmC ITSEAextTmD1 ITSEAintTmD1
+  	ITSEAdysTmD1 BCHW1-BCHW3;
+    
+	AUXILIARY ARE cov edu;
+	
+	TRAINING = BCHW1-BCHW3 (bch);
+				  
+	IDVARIABLE IS FamilyID;
+
+   	MISSING IS *;
+	
+	CLASSES = class(3);
+
+ANALYSIS:
+	TYPE = MIXTURE;
+	STARTS = 0 0;
+	ESTIMATOR = MLR;
+	
+MODEL:
+	%OVERALL%
+	IBQRVSFnegmC;
+
+	%class#1%
+	[IBQRVSFnegmC] (a);
+	
+	%class#2%
+	[IBQRVSFnegmC] (b);
+	
+	%class#3%
+	[IBQRVSFnegmC] (c);
+	
+	
+MODEL TEST:
+	a = b; !Wald test comparing a and b
+	a = c; !Wald test comparing a and c
